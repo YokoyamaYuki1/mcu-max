@@ -75,7 +75,35 @@ void print_move(mcumax_move move)
         print_square(move.to);
     }
 }
+//追加開始
+mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time)
+{
+    mcumax_move best_move = MCUMAX_MOVE_INVALID;
+    uint32_t node_max = 100;
+    uint32_t max_depth = 30;
 
+    for (uint32_t depth = 1; depth <= max_depth; depth++)
+    {
+        clock_t current_time = clock();
+        double elapsed_time_ms = 1000.0 * (current_time - start_time) / CLOCKS_PER_SEC;
+
+        if (elapsed_time_ms >= max_time_ms)
+            break;
+
+        mcumax_move move = mcumax_search_best_move(node_max, depth);
+        if (move.from == MCUMAX_SQUARE_INVALID || move.to == MCUMAX_SQUARE_INVALID)
+            break;
+
+        best_move = move;
+
+        double remaining_time_ms = max_time_ms - elapsed_time_ms;
+        if (remaining_time_ms > 5000)
+            node_max *= 2;
+        else if (remaining_time_ms < 1000)
+            node_max = (node_max > 10) ? node_max / 2 : 10;
+    }
+    return best_move;
+}//追加終了
 bool send_uci_command(char *line)
 {
     char *token = strtok(line, " \n");
