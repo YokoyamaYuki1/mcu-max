@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include "mcu-max.h"
-
+#include <time.h> // clock_t のために必要　追加
 #define MAIN_VALID_MOVES_NUM 512
 
 void print_board()
@@ -89,6 +89,29 @@ bool send_uci_command(char *line)
         printf("id author " MCUMAX_AUTHOR "\n");
         printf("uciok\n");
     }
+    // "go" コマンドの処理に movetime を追加開始
+    else if (!strcmp(token, "go"))
+    {
+        uint32_t movetime_ms = 100; // デフォルト探索時間
+        while ((token = strtok(NULL, " \n")))
+        {
+            if (!strcmp(token, "movetime"))
+            {
+                token = strtok(NULL, " \n");
+                if (token)
+                {
+                    movetime_ms = atoi(token); // movetimeを取得
+                }
+            }
+        }
+        clock_t start_time = clock();
+        mcumax_move best_move = dynamic_search_with_time_limit(movetime_ms, start_time);
+
+        printf("bestmove ");
+        print_move(best_move);
+        printf("\n");
+    }
+    //追加終了
     else if (!strcmp(token, "uci") ||
              !strcmp(token, "ucinewgame"))
         mcumax_init();
@@ -147,6 +170,7 @@ bool send_uci_command(char *line)
             }
         }
     }
+/*削除開始
     else if (!strcmp(token, "go"))
     {
         mcumax_move move = mcumax_search_best_move(1, 30);
@@ -156,6 +180,30 @@ bool send_uci_command(char *line)
         print_move(move);
         printf("\n");
     }
+*削除終了/
+    // "go" コマンドの処理に movetime を追加開始
+    else if (!strcmp(token, "go"))
+    {
+        uint32_t movetime_ms = 100; // デフォルト探索時間
+        while ((token = strtok(NULL, " \n")))
+        {
+            if (!strcmp(token, "movetime"))
+            {
+                token = strtok(NULL, " \n");
+                if (token)
+                {
+                    movetime_ms = atoi(token); // movetimeを取得
+                }
+            }
+        }
+        clock_t start_time = clock();
+        mcumax_move best_move = dynamic_search_with_time_limit(movetime_ms, start_time);
+
+        printf("bestmove ");
+        print_move(best_move);
+        printf("\n");
+    }
+    //追加終了
     else if (!strcmp(token, "quit"))
         return true;
     else
