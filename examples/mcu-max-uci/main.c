@@ -208,7 +208,7 @@ bool send_uci_command(char *line)
         print_move(move);
         printf("\n");
     }
-*削除終了/
+削除終了*/
     // "go" コマンドの処理に movetime を追加開始
     else if (!strcmp(token, "go"))
     {
