@@ -106,11 +106,29 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
     return best_move;
 }//追加終了削除終了*/
 // 追加開始: 時間制限いっぱいまで探索
-mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time)
+#include <stdlib.h> // qsort のために必要
+
+// 1手の評価構造体
+typedef struct
+{
+    mcumax_move move;
+    int32_t score;
+} MoveEvaluation;
+
+// qsort 用の比較関数（降順）
+int compare_moves(const void *a, const void *b)
+{
+    MoveEvaluation *move_a = (MoveEvaluation *)a;
+    MoveEvaluation *move_b = (MoveEvaluation *)b;
+    return move_b->score - move_a->score; // 評価の降順にソート
+}
+
+// 修正版: 時間制限いっぱいまで探索、組み合わせ数に閾値を設ける
+mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time, uint32_t move_limit)
 {
     mcumax_move best_move = MCUMAX_MOVE_INVALID;
-
     uint32_t current_depth = 1;  // 現在の探索深さ
+
     while (true)
     {
         clock_t current_time = clock();
@@ -120,15 +138,54 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
         if (elapsed_time_ms >= max_time_ms)
             break;
 
-        // 現在の深さで最良手を探索
-        mcumax_move move = mcumax_search_best_move(0, current_depth);  // node_max を 0 に設定して制限なし
+        // 全ての合法手を取得
+        mcumax_move valid_moves[MAIN_VALID_MOVES_NUM];
+        uint32_t valid_moves_num = mcumax_search_valid_moves(valid_moves, MAIN_VALID_MOVES_NUM);
 
-        // 無効な手が返された場合、探索を終了
-        if (move.from == MCUMAX_SQUARE_INVALID || move.to == MCUMAX_SQUARE_INVALID)
-            break;
+        // 評価結果を保持する配列を用意
+        MoveEvaluation evaluated_moves[MAIN_VALID_MOVES_NUM];
+        uint32_t evaluated_count = 0;
 
-        // 最良手を更新
-        best_move = move;
+        // 各手を評価
+        for (uint32_t i = 0; i < valid_moves_num; i++)
+        {
+            mcumax_move move = valid_moves[i];
+            if (move.from == MCUMAX_SQUARE_INVALID || move.to == MCUMAX_SQUARE_INVALID)
+                continue;
+
+            // 仮にその手を指した状態でスコアを取得
+            mcumax_play_move(move);
+            int32_t score = mcumax_search(-MCUMAX_SCORE_MAX, MCUMAX_SCORE_MAX, mcumax.score, mcumax.en_passant_square, 1, MCUMAX_INTERNAL_NODE);
+            mcumax_play_move((mcumax_move){move.to, move.from}); // 元の状態に戻す
+
+            evaluated_moves[evaluated_count++] = (MoveEvaluation){move, score};
+        }
+
+        // 評価結果をソート（降順）
+        qsort(evaluated_moves, evaluated_count, sizeof(MoveEvaluation), compare_moves);
+
+        // 組み合わせが閾値を超える場合は上位 move_limit 個に絞る
+        if (evaluated_count > move_limit)
+        {
+            evaluated_count = move_limit;
+        }
+
+        // 次の深さで探索を実行
+        for (uint32_t i = 0; i < evaluated_count; i++)
+        {
+            mcumax_move move = evaluated_moves[i].move;
+
+            // 現在の深さで探索
+            mcumax_play_move(move);
+            mcumax_move next_best_move = mcumax_search_best_move(0, current_depth);
+            mcumax_play_move((mcumax_move){move.to, move.from}); // 元の状態に戻す
+
+            // 最良手を更新
+            if (next_best_move.from != MCUMAX_SQUARE_INVALID && next_best_move.to != MCUMAX_SQUARE_INVALID)
+            {
+                best_move = next_best_move;
+            }
+        }
 
         // 探索深さを増やす
         current_depth++;
@@ -136,6 +193,7 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
 
     return best_move;
 }
+
 //追加終了
 
 bool send_uci_command(char *line)
@@ -167,7 +225,7 @@ bool send_uci_command(char *line)
             }
         }
         clock_t start_time = clock();
-        mcumax_move best_move = dynamic_search_with_time_limit(movetime_ms, start_time);
+        mcumax_move best_move = dynamic_search_with_time_limit(movetime_ms, start_time,512);
 
         printf("bestmove ");
         print_move(best_move);
