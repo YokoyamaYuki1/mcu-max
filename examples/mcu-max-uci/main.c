@@ -75,7 +75,7 @@ void print_move(mcumax_move move)
         print_square(move.to);
     }
 }
-//追加開始
+/*削除開始//追加開始
 mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time)
 {
     mcumax_move best_move = MCUMAX_MOVE_INVALID;
@@ -103,7 +103,42 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
             node_max = (node_max > 10) ? node_max / 2 : 10;
     }
     return best_move;
-}//追加終了
+}//追加終了削除終了*/
+//追加開始
+#define LEGAL_MOVES_THRESHOLD 1000 // 合法手の総和の閾値
+
+mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time)
+{
+    mcumax_move best_move = MCUMAX_MOVE_INVALID;
+
+    for (uint32_t depth = 1; ; depth++) // 無制限に深さを増加
+    {
+        clock_t current_time = clock();
+        double elapsed_time_ms = 1000.0 * (current_time - start_time) / CLOCKS_PER_SEC;
+
+        if (elapsed_time_ms >= max_time_ms)
+            break;
+
+        // 合法手数を取得
+        mcumax_move valid_moves[LEGAL_MOVES_THRESHOLD];
+        uint32_t total_legal_moves = mcumax_search_valid_moves(valid_moves, LEGAL_MOVES_THRESHOLD);
+
+        // 合法手の総和が閾値を超えた場合、探索を打ち切る
+        if (total_legal_moves > LEGAL_MOVES_THRESHOLD)
+            break;
+
+        // 指定深さでの探索を実行
+        mcumax_move move = mcumax_search_best_move(total_legal_moves, depth);
+        if (move.from == MCUMAX_SQUARE_INVALID || move.to == MCUMAX_SQUARE_INVALID)
+            break;
+
+        best_move = move;
+    }
+
+    return best_move;
+}
+//追加終了
+
 bool send_uci_command(char *line)
 {
     char *token = strtok(line, " \n");
