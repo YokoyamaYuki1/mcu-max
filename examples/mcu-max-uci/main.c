@@ -9,47 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "mcu-max.h"
-#include <time.h> // clock_t のために必要
 
 #define MAIN_VALID_MOVES_NUM 512
-
-typedef struct
-{
-    mcumax_move move;
-    int32_t score;
-} MoveEvaluation;
-
-int compare_moves(const void *a, const void *b)
-{
-    MoveEvaluation *move_a = (MoveEvaluation *)a;
-    MoveEvaluation *move_b = (MoveEvaluation *)b;
-    return move_b->score - move_a->score; // 降順
-}
-
-mcumax_move mcumax_search_best_move_with_limit(uint32_t node_max, uint32_t depth_max, uint32_t move_limit)
-{
-    mcumax_move valid_moves[MAIN_VALID_MOVES_NUM];
-    uint32_t valid_moves_num = mcumax_search_valid_moves(valid_moves, MAIN_VALID_MOVES_NUM);
-
-    MoveEvaluation evaluated_moves[MAIN_VALID_MOVES_NUM];
-    uint32_t evaluated_count = 0;
-
-    for (uint32_t i = 0; i < valid_moves_num; i++)
-    {
-        mcumax_play_move(valid_moves[i]);
-        int32_t score = mcumax_search(-MCUMAX_SCORE_MAX, MCUMAX_SCORE_MAX, mcumax.score, mcumax.en_passant_square, 1, MCUMAX_INTERNAL_NODE);
-        mcumax_play_move((mcumax_move){valid_moves[i].to, valid_moves[i].from}); // 元に戻す
-        evaluated_moves[evaluated_count++] = (MoveEvaluation){valid_moves[i], score};
-    }
-
-    qsort(evaluated_moves, evaluated_count, sizeof(MoveEvaluation), compare_moves);
-
-    if (evaluated_count > move_limit)
-        evaluated_count = move_limit;
-
-    return evaluated_moves[0].move; // 上位の手を返す
-}
 
 void print_board()
 {
@@ -150,7 +113,7 @@ bool send_uci_command(char *line)
         int fen_index = 0;
         char fen_string[256];
 
-        while ((token = strtok(NULL, " \n")))
+        while (token = strtok(NULL, " \n"))
         {
             if (fen_index)
             {
@@ -186,24 +149,11 @@ bool send_uci_command(char *line)
     }
     else if (!strcmp(token, "go"))
     {
-        uint32_t movetime_ms = 1000; // デフォルト探索時間
-        uint32_t move_limit = 10;   // デフォルトの組み合わせ閾値
-
-        while ((token = strtok(NULL, " \n")))
-        {
-            if (!strcmp(token, "movetime"))
-            {
-                token = strtok(NULL, " \n");
-                if (token)
-                    movetime_ms = atoi(token);
-            }
-        }
-
-        clock_t start_time = clock();
-        mcumax_move best_move = mcumax_search_best_move_with_limit(movetime_ms, 30, move_limit);
+        mcumax_move move = mcumax_search_best_move(1, 30);
+        mcumax_play_move(move);
 
         printf("bestmove ");
-        print_move(best_move);
+        print_move(move);
         printf("\n");
     }
     else if (!strcmp(token, "quit"))
