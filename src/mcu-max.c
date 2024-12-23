@@ -147,6 +147,14 @@ static int32_t mcumax_search(int32_t alpha,
                              uint8_t depth,
                              enum mcumax_mode mode);
 削除終了*/
+/*追加開始
+int32_t mcumax_search(int32_t alpha,
+                             int32_t beta,
+                             int32_t score,
+                             uint8_t en_passant_square,
+                             uint8_t depth,
+                             enum mcumax_mode mode);
+追加終了*/
 // Recursive minimax search
 // (alpha,beta)=window, score=current evaluation score, en_passant_square=e.p. sqr.
 // depth=depth, in_root=in_root; returns score
