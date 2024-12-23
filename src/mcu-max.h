@@ -12,7 +12,16 @@
 
 #if !defined(MCU_MAX_H)
 #define MCU_MAX_H
-
+//追加
+#define MCUMAX_SCORE_MAX 8000
+enum mcumax_mode
+{
+    MCUMAX_INTERNAL_NODE,
+    MCUMAX_SEARCH_VALID_MOVES,
+    MCUMAX_SEARCH_BEST_MOVE,
+    MCUMAX_PLAY_MOVE,
+};
+//追加終了
 #ifdef __cplusplus
 extern "C" {
 #endif
