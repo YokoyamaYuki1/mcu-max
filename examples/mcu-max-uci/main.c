@@ -13,6 +13,7 @@
 #include "mcu-max.h"
 #include <time.h> // clock_t のために必要　追加
 #define MAIN_VALID_MOVES_NUM 512
+#define LEGAL_MOVES_THRESHOLD 500 // 合法手の総和の閾値
 
 void print_board()
 {
@@ -105,8 +106,6 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
     return best_move;
 }//追加終了削除終了*/
 //追加開始
-#define LEGAL_MOVES_THRESHOLD 1000 // 合法手の総和の閾値
-
 mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time)
 {
     mcumax_move best_move = MCUMAX_MOVE_INVALID;
