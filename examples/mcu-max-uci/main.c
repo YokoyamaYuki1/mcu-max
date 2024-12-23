@@ -209,7 +209,7 @@ bool send_uci_command(char *line)
         printf("id author " MCUMAX_AUTHOR "\n");
         printf("uciok\n");
     }
-    // "go" コマンドの処理に movetime を追加開始
+/*    // "go" コマンドの処理に movetime を追加開始
     else if (!strcmp(token, "go"))
     {
         uint32_t movetime_ms = 100; // デフォルト探索時間
@@ -231,7 +231,7 @@ bool send_uci_command(char *line)
         print_move(best_move);
         printf("\n");
     }
-    //追加終了
+    //追加終了*/
     else if (!strcmp(token, "uci") ||
              !strcmp(token, "ucinewgame"))
         mcumax_init();
@@ -317,7 +317,7 @@ bool send_uci_command(char *line)
             }
         }
         clock_t start_time = clock();
-        mcumax_move best_move = dynamic_search_with_time_limit(movetime_ms, start_time);
+        mcumax_move best_move = dynamic_search_with_time_limit(movetime_ms, start_time,512);
 
         printf("bestmove ");
         print_move(best_move);
