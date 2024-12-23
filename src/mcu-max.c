@@ -27,19 +27,6 @@
 #define MCUMAX_SCORE_MAX 8000
 #define MCUMAX_DEPTH_MAX 99
 
-//追加
-int32_t mcumax_get_current_score(void)
-{
-    return mcumax.score;
-}
-
-uint8_t mcumax_get_en_passant_square(void)
-{
-    return mcumax.en_passant_square;
-}
-
-//追加終了
-/*削除開始
 enum mcumax_mode
 {
     MCUMAX_INTERNAL_NODE,
@@ -47,7 +34,7 @@ enum mcumax_mode
     MCUMAX_SEARCH_BEST_MOVE,
     MCUMAX_PLAY_MOVE,
 };
-削除終了*/
+
 struct
 {
     // Board: first half of 16x8 + dummy
@@ -139,22 +126,14 @@ static struct HashEntry mcumax_hash_table[MCUMAX_HASH_TABLE_SIZE];
 #endif
 
 typedef bool (*mcumax_move_callback)(mcumax_move move);
-/*削除開始
+
 static int32_t mcumax_search(int32_t alpha,
                              int32_t beta,
                              int32_t score,
                              uint8_t en_passant_square,
                              uint8_t depth,
                              enum mcumax_mode mode);
-削除終了*/
-/*追加開始
-int32_t mcumax_search(int32_t alpha,
-                             int32_t beta,
-                             int32_t score,
-                             uint8_t en_passant_square,
-                             uint8_t depth,
-                             enum mcumax_mode mode);
-追加終了*/
+
 // Recursive minimax search
 // (alpha,beta)=window, score=current evaluation score, en_passant_square=e.p. sqr.
 // depth=depth, in_root=in_root; returns score
