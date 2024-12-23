@@ -27,6 +27,18 @@
 #define MCUMAX_SCORE_MAX 8000
 #define MCUMAX_DEPTH_MAX 99
 
+//追加
+int32_t mcumax_get_current_score(void)
+{
+    return mcumax.score;
+}
+
+uint8_t mcumax_get_en_passant_square(void)
+{
+    return mcumax.en_passant_square;
+}
+
+//追加終了
 enum mcumax_mode
 {
     MCUMAX_INTERNAL_NODE,
