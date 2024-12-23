@@ -1,3 +1,4 @@
+
 /*
  * mcu-max UCI chess interface example
  *
