@@ -127,7 +127,6 @@ int compare_moves(const void *a, const void *b)
 mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time, uint32_t move_limit)
 {
     mcumax_move best_move = MCUMAX_MOVE_INVALID;
-    uint32_t current_depth = 1;  // 現在の探索深さ
 
     while (true)
     {
@@ -155,7 +154,9 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
 
             // 仮にその手を指した状態でスコアを取得
             mcumax_play_move(move);
-            int32_t score = mcumax_search(-MCUMAX_SCORE_MAX, MCUMAX_SCORE_MAX, mcumax.score, mcumax.en_passant_square, 1, MCUMAX_INTERNAL_NODE);
+            int32_t score = mcumax_search(-MCUMAX_SCORE_MAX, MCUMAX_SCORE_MAX,
+                                          mcumax_get_current_score(), mcumax_get_en_passant_square(),
+                                          1, MCUMAX_INTERNAL_NODE);
             mcumax_play_move((mcumax_move){move.to, move.from}); // 元の状態に戻す
 
             evaluated_moves[evaluated_count++] = (MoveEvaluation){move, score};
@@ -170,30 +171,15 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
             evaluated_count = move_limit;
         }
 
-        // 次の深さで探索を実行
-        for (uint32_t i = 0; i < evaluated_count; i++)
+        // 最良手を更新
+        if (evaluated_count > 0)
         {
-            mcumax_move move = evaluated_moves[i].move;
-
-            // 現在の深さで探索
-            mcumax_play_move(move);
-            mcumax_move next_best_move = mcumax_search_best_move(0, current_depth);
-            mcumax_play_move((mcumax_move){move.to, move.from}); // 元の状態に戻す
-
-            // 最良手を更新
-            if (next_best_move.from != MCUMAX_SQUARE_INVALID && next_best_move.to != MCUMAX_SQUARE_INVALID)
-            {
-                best_move = next_best_move;
-            }
+            best_move = evaluated_moves[0].move;
         }
-
-        // 探索深さを増やす
-        current_depth++;
     }
 
     return best_move;
 }
-
 //追加終了
 
 bool send_uci_command(char *line)
