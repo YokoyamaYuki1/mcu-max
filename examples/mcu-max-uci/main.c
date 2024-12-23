@@ -13,7 +13,7 @@
 #include "mcu-max.h"
 #include <time.h> // clock_t のために必要　追加
 #define MAIN_VALID_MOVES_NUM 512
-#define LEGAL_MOVES_THRESHOLD 500 // 合法手の総和の閾値
+#define LEGAL_MOVES_THRESHOLD 100 // 合法手の総和の閾値
 
 void print_board()
 {
