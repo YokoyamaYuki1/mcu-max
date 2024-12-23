@@ -37,6 +37,10 @@ extern "C" {
 #define MCUMAX_MOVE_INVALID \
     (mcumax_move) { MCUMAX_SQUARE_INVALID, MCUMAX_SQUARE_INVALID }
 
+//追加
+int32_t mcumax_get_current_score(void);
+uint8_t mcumax_get_en_passant_square(void);
+//追加終了
 typedef uint8_t mcumax_square;
 typedef uint8_t mcumax_piece;
 
