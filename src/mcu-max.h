@@ -102,6 +102,8 @@ uint32_t mcumax_search_valid_moves(mcumax_move *buffer, uint32_t buffer_size);
  * @return The best move (MCUMAX_SQUARE_INVALID, MCUMAX_SQUARE_INVALID if none found).
  */
 mcumax_move mcumax_search_best_move(uint32_t node_max, uint32_t depth_max);
+//追加
+int32_t mcumax_search(int32_t alpha, int32_t beta, int32_t score, uint8_t en_passant_square, uint8_t depth, enum mcumax_mode mode);
 
 /**
  * @brief Plays a move.
