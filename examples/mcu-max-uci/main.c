@@ -13,7 +13,7 @@
 #include "mcu-max.h"
 #include <time.h> // clock_t のために必要　追加
 #define MAIN_VALID_MOVES_NUM 512
-#define LEGAL_MOVES_THRESHOLD 100 // 合法手の総和の閾値
+#define LEGAL_MOVES_THRESHOLD 50 // 合法手の総和の閾値
 
 void print_board()
 {
@@ -105,33 +105,33 @@ mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_t
     }
     return best_move;
 }//追加終了削除終了*/
-//追加開始
+// 追加開始: 時間制限いっぱいまで探索
 mcumax_move dynamic_search_with_time_limit(uint32_t max_time_ms, clock_t start_time)
 {
     mcumax_move best_move = MCUMAX_MOVE_INVALID;
 
-    for (uint32_t depth = 1; ; depth++) // 無制限に深さを増加
+    uint32_t current_depth = 1;  // 現在の探索深さ
+    while (true)
     {
         clock_t current_time = clock();
         double elapsed_time_ms = 1000.0 * (current_time - start_time) / CLOCKS_PER_SEC;
 
+        // 時間制限に達した場合、探索を終了
         if (elapsed_time_ms >= max_time_ms)
             break;
 
-        // 合法手数を取得
-        mcumax_move valid_moves[LEGAL_MOVES_THRESHOLD];
-        uint32_t total_legal_moves = mcumax_search_valid_moves(valid_moves, LEGAL_MOVES_THRESHOLD);
+        // 現在の深さで最良手を探索
+        mcumax_move move = mcumax_search_best_move(0, current_depth);  // node_max を 0 に設定して制限なし
 
-        // 合法手の総和が閾値を超えた場合、探索を打ち切る
-        if (total_legal_moves > LEGAL_MOVES_THRESHOLD)
-            break;
-
-        // 指定深さでの探索を実行
-        mcumax_move move = mcumax_search_best_move(total_legal_moves, depth);
+        // 無効な手が返された場合、探索を終了
         if (move.from == MCUMAX_SQUARE_INVALID || move.to == MCUMAX_SQUARE_INVALID)
             break;
 
+        // 最良手を更新
         best_move = move;
+
+        // 探索深さを増やす
+        current_depth++;
     }
 
     return best_move;
