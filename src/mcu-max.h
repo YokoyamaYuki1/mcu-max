@@ -12,16 +12,7 @@
 
 #if !defined(MCU_MAX_H)
 #define MCU_MAX_H
-//追加
-#define MCUMAX_SCORE_MAX 8000
-enum mcumax_mode
-{
-    MCUMAX_INTERNAL_NODE,
-    MCUMAX_SEARCH_VALID_MOVES,
-    MCUMAX_SEARCH_BEST_MOVE,
-    MCUMAX_PLAY_MOVE,
-};
-//追加終了
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,10 +28,6 @@ extern "C" {
 #define MCUMAX_MOVE_INVALID \
     (mcumax_move) { MCUMAX_SQUARE_INVALID, MCUMAX_SQUARE_INVALID }
 
-//追加
-int32_t mcumax_get_current_score(void);
-uint8_t mcumax_get_en_passant_square(void);
-//追加終了
 typedef uint8_t mcumax_square;
 typedef uint8_t mcumax_piece;
 
@@ -115,8 +102,6 @@ uint32_t mcumax_search_valid_moves(mcumax_move *buffer, uint32_t buffer_size);
  * @return The best move (MCUMAX_SQUARE_INVALID, MCUMAX_SQUARE_INVALID if none found).
  */
 mcumax_move mcumax_search_best_move(uint32_t node_max, uint32_t depth_max);
-//追加
-int32_t mcumax_search(int32_t alpha, int32_t beta, int32_t score, uint8_t en_passant_square, uint8_t depth, enum mcumax_mode mode);
 
 /**
  * @brief Plays a move.
