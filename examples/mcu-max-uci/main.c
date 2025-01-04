@@ -150,7 +150,7 @@ bool send_uci_command(char *line)
     }
     else if (!strcmp(token, "go"))
     {
-        mcumax_move move = mcumax_search_best_move(80000, 100);
+        mcumax_move move = mcumax_search_best_move(85000, 100);
         mcumax_play_move(move);
 
         printf("bestmove ");
